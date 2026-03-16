@@ -87,6 +87,7 @@ Library\Bee\artifacts\mvdfrm\UnityEngine.JSONSerializeModule.dll_84B30C23A518965
 Library\Bee\artifacts\mvdfrm\UnityEngine.LocalizationModule.dll_EED4FEABABF405F5.mvfrm
 Library\Bee\artifacts\mvdfrm\UnityEngine.MarshallingModule.dll_BA7797B60EBB4CEC.mvfrm
 Library\Bee\artifacts\mvdfrm\UnityEngine.MultiplayerModule.dll_91B715ADE35AAD12.mvfrm
+Library\Bee\artifacts\mvdfrm\UnityEngine.NVIDIAModule.dll_068B945C08DB8477.mvfrm
 Library\Bee\artifacts\mvdfrm\UnityEngine.ParticleSystemModule.dll_44CC6313FFED74B1.mvfrm
 Library\Bee\artifacts\mvdfrm\UnityEngine.PerformanceReportingModule.dll_568E655FD8A13C6A.mvfrm
 Library\Bee\artifacts\mvdfrm\UnityEngine.Physics2DModule.dll_D71C4B8DB4EB2A81.mvfrm
@@ -132,3 +133,4 @@ Library\Bee\artifacts\mvdfrm\UnityEngine.VirtualTexturingModule.dll_D0F004A718D0
 Library\Bee\artifacts\mvdfrm\UnityEngine.VRModule.dll_10C5A629B52AFAF8.mvfrm
 Library\Bee\artifacts\mvdfrm\UnityEngine.WindModule.dll_A076DA0E06FEBB14.mvfrm
 Library\Bee\artifacts\mvdfrm\UnityEngine.XRModule.dll_4384692E3E654856.mvfrm
+Library\Bee\artifacts\mvdfrm\UnityEditor.iOS.Extensions.Xcode.dll_E65A92EB402AEE5E.mvfrm
