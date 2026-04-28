@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3dd8923d5bab1b40a75a71938e8dae6, type: 3}
+  m_Name: LaserSpell
+  m_EditorClassIdentifier: Assembly-CSharp::SpellData
+  spellName: Laser
+  icon: {fileID: -7738674049183415588, guid: 5ea9a4724876b8748899465b7ac31720, type: 3}
+  spellType: 1
+  rangeType: 1
+  damage: 10
+  cooldown: 1
+  canDamageCaster: 0
+  projectilePrefab: {fileID: 0}
+  speed: 10
+  spawnOffset: 0.5
+  telegraphLaser: 1
+  telegraphTime: 0.4
+  telegraphWidth: 0.05
+  telegraphColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  range: 12
+  laserWidth: 0.12
+  laserDuration: 0.05
+  laserColor: {r: 1, g: 0, b: 0, a: 1}
+  castEffect: {fileID: 0}
+  ultimateDamageMultiplier: 2
+  ultimateSpeedMultiplier: 0
+  ultimateRangeMultiplier: 1.5
+  ultimateCooldownMultiplier: 1
+  ultimateSizeMultiplier: 1.5
+  ultimateExtraProjectiles: 0
+  ultimateExtraBounces: 0
+  ultimateExtraPulses: 0

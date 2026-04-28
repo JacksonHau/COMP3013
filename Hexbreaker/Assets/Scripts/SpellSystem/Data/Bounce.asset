@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3dd8923d5bab1b40a75a71938e8dae6, type: 3}
+  m_Name: Bounce
+  m_EditorClassIdentifier: Assembly-CSharp::SpellData
+  spellName: Bounce
+  icon: {fileID: 5089383608270426301, guid: e0878a7ed03b14842b63d3a844b9f022, type: 3}
+  spellType: 4
+  rangeType: 1
+  damage: 5
+  cooldown: 0.4
+  canDamageCaster: 0
+  projectilePrefab: {fileID: 395161721065308688, guid: 7786ffb76bedbe14596e3352a6ce4a66, type: 3}
+  speed: 10
+  spawnOffset: 0.6
+  telegraphLaser: 1
+  telegraphTime: 0.6
+  telegraphWidth: 0.05
+  telegraphColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  range: 10
+  laserWidth: 0.12
+  laserDuration: 0.05
+  laserColor: {r: 1, g: 0, b: 0, a: 1}
+  castEffect: {fileID: 0}
+  ultimateDamageMultiplier: 2
+  ultimateSpeedMultiplier: 1
+  ultimateRangeMultiplier: 1.5
+  ultimateCooldownMultiplier: 1
+  ultimateSizeMultiplier: 1.5
+  ultimateExtraProjectiles: 6
+  ultimateExtraBounces: 3
+  ultimateExtraPulses: 0
