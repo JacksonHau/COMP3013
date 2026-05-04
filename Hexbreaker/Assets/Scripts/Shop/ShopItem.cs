@@ -12,9 +12,15 @@ public class ShopItem : MonoBehaviour
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private TMP_Text costText;
 
+    [Header("Hover Info")]
+    [SerializeField] private GameObject floatingTextPrefab;
+    [SerializeField] private Vector3 floatingTextOffset = new Vector3(0f, 1f, 0f);
+
     private UpgradeData upgrade;
     private bool playerInRange;
     private bool purchased;
+
+    private GameObject activeHoverText;
 
     private void OnEnable()
     {
@@ -26,6 +32,8 @@ public class ShopItem : MonoBehaviour
     {
         if (interactAction != null)
             interactAction.action.performed -= OnInteractPerformed;
+
+        HideHoverText();
     }
 
     public void Setup(UpgradeData upgradeData)
@@ -61,24 +69,68 @@ public class ShopItem : MonoBehaviour
             return;
         }
 
-        PlayerUpgradeApplier applier = FindFirstObjectByType<PlayerUpgradeApplier>();
+        PlayerUpgradeManager applier = FindFirstObjectByType<PlayerUpgradeManager>();
 
         if (applier != null)
-            applier.ApplyUpgrade(upgrade);
+            applier.AddUpgrade(upgrade);
 
         purchased = true;
+
+        HideHoverText();
         Destroy(gameObject);
+    }
+
+    private void ShowHoverText()
+    {
+        if (floatingTextPrefab == null || upgrade == null || activeHoverText != null)
+            return;
+
+        activeHoverText = Instantiate(
+            floatingTextPrefab,
+            transform.position + floatingTextOffset,
+            Quaternion.identity,
+            transform
+        );
+
+        FloatingText floatingText = activeHoverText.GetComponent<FloatingText>();
+
+        if (floatingText != null)
+        {
+            string message = upgrade.upgradeName;
+
+            if (!string.IsNullOrEmpty(upgrade.description))
+                message += "\n" + upgrade.description;
+
+            message += "\nCost: " + upgrade.cost;
+
+            floatingText.Setup(message, Color.yellow, 3f);
+        }
+    }
+
+    private void HideHoverText()
+    {
+        if (activeHoverText != null)
+        {
+            Destroy(activeHoverText);
+            activeHoverText = null;
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Player"))
-            playerInRange = true;
+        if (!other.CompareTag("Player"))
+            return;
+
+        playerInRange = true;
+        ShowHoverText();
     }
 
     private void OnTriggerExit2D(Collider2D other)
     {
-        if (other.CompareTag("Player"))
-            playerInRange = false;
+        if (!other.CompareTag("Player"))
+            return;
+
+        playerInRange = false;
+        HideHoverText();
     }
 }

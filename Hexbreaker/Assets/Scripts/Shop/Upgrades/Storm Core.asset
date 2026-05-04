@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f609402b81c9a04692adc6866974d48, type: 3}
+  m_Name: Storm Core
+  m_EditorClassIdentifier: Assembly-CSharp::UpgradeData
+  upgradeName: Storm Core
+  icon: {fileID: -8542634343927961704, guid: 191ab2e36a435454f97f61291a900dc3, type: 3}
+  cost: 50
+  description: All spells are 50% faster
+  target: 0
+  effectType: 4
+  value: 1.5
+  specialID: FAST_PROJECTILES

@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f609402b81c9a04692adc6866974d48, type: 3}
+  m_Name: Heavy Rune - Slot1
+  m_EditorClassIdentifier: Assembly-CSharp::UpgradeData
+  upgradeName: Heavy Rune - Slot1
+  icon: {fileID: 5381593901615977003, guid: e7e58b23f581e4d46b156341ae09aa2b, type: 3}
+  cost: 15
+  description: Slot 1 gains 50% more damage
+  target: 1
+  effectType: 0
+  value: 1.5
+  specialID: 

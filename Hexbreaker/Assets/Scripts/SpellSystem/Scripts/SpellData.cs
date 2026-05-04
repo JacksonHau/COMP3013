@@ -15,18 +15,6 @@ public enum SpellRangeType
     Ranged
 }
 
-public struct RuntimeSpellStats
-{
-    public float damage;
-    public float speed;
-    public float range;
-    public float cooldown;
-    public float spawnOffset;
-    public int extraProjectiles;
-    public int extraBounces;
-    public int extraPulses;
-    public bool canDamageCaster;
-}
 
 [CreateAssetMenu(menuName = "Spells/Spell")]
 public class SpellData : ScriptableObject
@@ -73,42 +61,11 @@ public class SpellData : ScriptableObject
 
     [Header("Ultimate")]
     public float ultimateDamageMultiplier = 2f;
-    public float ultimateSpeedMultiplier;
+    public float ultimateSpeedMultiplier = 1f;
     public float ultimateRangeMultiplier = 1.5f;
     public float ultimateCooldownMultiplier = 1f;
     public float ultimateSizeMultiplier = 1.5f;
     public int ultimateExtraProjectiles = 0;
     public int ultimateExtraBounces = 0;
     public int ultimateExtraPulses = 0;
-
-    private RuntimeSpellStats GetSpellStats(SpellData spell, bool isUltimate)
-    {
-        RuntimeSpellStats stats = new RuntimeSpellStats
-        {
-            damage = spell.damage,
-            speed = spell.speed,
-            range = spell.range,
-            cooldown = spell.cooldown,
-            spawnOffset = spell.spawnOffset,
-            extraProjectiles = 0,
-            extraBounces = 0,
-            extraPulses = 0,
-            canDamageCaster = spell.canDamageCaster
-        };
-
-        if (isUltimate)
-        {
-            stats.damage *= spell.ultimateDamageMultiplier;
-            stats.speed *= spell.ultimateSpeedMultiplier;
-            stats.range *= spell.ultimateRangeMultiplier;
-            stats.cooldown *= spell.ultimateCooldownMultiplier;
-            stats.spawnOffset *= spell.ultimateSizeMultiplier;
-            stats.extraProjectiles += spell.ultimateExtraProjectiles;
-            stats.extraBounces += spell.ultimateExtraBounces;
-            stats.extraPulses += spell.ultimateExtraPulses;
-        }
-
-        return stats;
-    }
 }
-

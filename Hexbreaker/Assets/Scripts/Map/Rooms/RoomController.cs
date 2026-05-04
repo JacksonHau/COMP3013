@@ -84,8 +84,18 @@ public class RoomController : MonoBehaviour
 
     private void BuildRoomTriggerFromTiles(HashSet<Vector2Int> roomFloorTiles)
     {
-        //clear generated trigger tiles
+        if (triggerTileContainer == null)
+            EnsureTriggerTileContainer();
+
+        if (roomFloorTiles == null || roomFloorTiles.Count == 0)
+        {
+            Debug.LogWarning($"{name}: Tried to build room trigger with no floor tiles.");
+            return;
+        }
+
+        // clear generated trigger tiles
         List<Transform> childrenToDelete = new List<Transform>();
+
         foreach (Transform child in triggerTileContainer)
         {
             childrenToDelete.Add(child);
@@ -109,7 +119,8 @@ public class RoomController : MonoBehaviour
             box.compositeOperation = Collider2D.CompositeOperation.Merge;
         }
 
-        roomComposite.GenerateGeometry();
+        if (roomComposite != null)
+            roomComposite.GenerateGeometry();
     }
 
     private void RebuildRuntimeState()
@@ -170,8 +181,16 @@ public class RoomController : MonoBehaviour
     {
         foreach (GameObject enemy in enemies)
         {
-            if (enemy != null)
-                enemy.SetActive(true);
+            if (enemy == null)
+                continue;
+
+            enemy.SetActive(true);
+
+            BossBase boss = enemy.GetComponent<BossBase>();
+            if (boss != null)
+            {
+                boss.StartBossFight();
+            }
         }
     }
 

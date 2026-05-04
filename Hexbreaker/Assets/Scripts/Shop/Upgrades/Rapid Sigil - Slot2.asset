@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f609402b81c9a04692adc6866974d48, type: 3}
+  m_Name: Rapid Sigil - Slot2
+  m_EditorClassIdentifier: Assembly-CSharp::UpgradeData
+  upgradeName: Rapid Sigil - Slot2
+  icon: {fileID: 4509464678899553610, guid: a7a0d7ebaf160c0478d8a23dcf8d097b, type: 3}
+  cost: 10
+  description: Slot 2 casts 25% faster
+  target: 2
+  effectType: 2
+  value: 0.25
+  specialID: 

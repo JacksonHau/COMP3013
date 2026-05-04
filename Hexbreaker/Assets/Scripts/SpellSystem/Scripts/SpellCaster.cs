@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -24,7 +25,6 @@ public class SpellCaster : MonoBehaviour
     [SerializeField] private Vector3 droppedPickupOffset = new Vector3(0.4f, 0f, 0f);
 
     private SpellPickup nearbyPickup;
-
     private PlayerInputActions inputActions;
 
     private float lastCastTime1;
@@ -51,6 +51,7 @@ public class SpellCaster : MonoBehaviour
         public int extraBounces;
         public int extraPulses;
         public bool canDamageCaster;
+        public float sizeMultiplier;
     }
 
     private void Awake()
@@ -58,9 +59,7 @@ public class SpellCaster : MonoBehaviour
         inputActions = new PlayerInputActions();
 
         if (laserRenderer == null)
-        {
             laserRenderer = gameObject.AddComponent<LineRenderer>();
-        }
 
         laserRenderer.positionCount = 2;
         laserRenderer.startWidth = 0.1f;
@@ -84,7 +83,6 @@ public class SpellCaster : MonoBehaviour
         inputActions.Player.PickupSlot2.performed += OnPickupSlot2;
         inputActions.Player.PickupSlot3.performed += OnPickupSlot3;
         inputActions.Player.CastUltimate.performed += OnCastUltimate;
-        inputActions.Player.Dash.performed += _ => { }; 
     }
 
     private void OnDisable()
@@ -99,58 +97,42 @@ public class SpellCaster : MonoBehaviour
         inputActions.Disable();
     }
 
-    private void OnFireLeft(InputAction.CallbackContext ctx)
-    {
-        TryCast(1);
-    }
-
-    private void OnFireRight(InputAction.CallbackContext ctx)
-    {
-        TryCast(2);
-    }
+    private void OnFireLeft(InputAction.CallbackContext ctx) => TryCast(1);
+    private void OnFireRight(InputAction.CallbackContext ctx) => TryCast(2);
+    private void OnCastUltimate(InputAction.CallbackContext ctx) => TryCastUltimate();
 
     private void OnPickupSlot1(InputAction.CallbackContext ctx)
     {
         if (nearbyPickup != null)
-        {
             nearbyPickup.PickupIntoSlot(this, 1);
-        }
     }
 
     private void OnPickupSlot2(InputAction.CallbackContext ctx)
     {
         if (nearbyPickup != null)
-        {
             nearbyPickup.PickupIntoSlot(this, 2);
-        }
     }
 
     private void OnPickupSlot3(InputAction.CallbackContext ctx)
     {
         if (nearbyPickup != null)
-        {
             nearbyPickup.PickupIntoSlot(this, 3);
-        }
-    }
-
-    private void OnCastUltimate(InputAction.CallbackContext ctx)
-    {
-        TryCastUltimate();
     }
 
     public void TryCast(int slot)
     {
         SpellData spell = slot == 1 ? spellSlot1 : spellSlot2;
+
         if (spell == null)
             return;
 
         float lastTime = slot == 1 ? lastCastTime1 : lastCastTime2;
-        RuntimeSpellStats stats = GetSpellStats(spell, false);
+        RuntimeSpellStats stats = GetSpellStats(spell, false, slot);
 
         if (Time.time < lastTime + stats.cooldown)
             return;
 
-        CastSpell(spell, false);
+        CastSpell(spell, false, slot);
 
         if (slot == 1)
             lastCastTime1 = Time.time;
@@ -165,7 +147,7 @@ public class SpellCaster : MonoBehaviour
         if (ultimateSlot == null)
             return;
 
-        RuntimeSpellStats stats = GetSpellStats(ultimateSlot, true);
+        RuntimeSpellStats stats = GetSpellStats(ultimateSlot, true, 3);
 
         if (ultimateEnergy < ultimateCost)
             return;
@@ -176,9 +158,9 @@ public class SpellCaster : MonoBehaviour
         ultimateEnergy = 0f;
         OnUltimateEnergyChanged?.Invoke(ultimateEnergy, maxUltimateEnergy);
 
-        CastSpell(ultimateSlot, true);
-        lastUltimateCastTime = Time.time;
+        CastSpell(ultimateSlot, true, 3);
 
+        lastUltimateCastTime = Time.time;
         OnCooldownStarted?.Invoke(3, stats.cooldown);
     }
 
@@ -188,15 +170,15 @@ public class SpellCaster : MonoBehaviour
         OnUltimateEnergyChanged?.Invoke(ultimateEnergy, maxUltimateEnergy);
     }
 
-    private void CastSpell(SpellData spell, bool isUltimate)
+    private void CastSpell(SpellData spell, bool isUltimate, int slot)
     {
-        RuntimeSpellStats stats = GetSpellStats(spell, isUltimate);
+        RuntimeSpellStats stats = GetSpellStats(spell, isUltimate, slot);
         Vector2 direction = GetMouseDirection();
 
         switch (spell.spellType)
         {
             case SpellType.Projectile:
-                SpawnProjectile(spell, stats, direction, isUltimate);
+                SpawnProjectile(spell, stats, direction);
                 break;
 
             case SpellType.Laser:
@@ -204,7 +186,7 @@ public class SpellCaster : MonoBehaviour
                 break;
 
             case SpellType.ExplosiveProjectile:
-                SpawnExplosiveProjectile(spell, stats, direction, isUltimate);
+                SpawnExplosiveProjectile(spell, stats, direction);
                 break;
 
             case SpellType.Nova:
@@ -215,12 +197,12 @@ public class SpellCaster : MonoBehaviour
                 break;
 
             case SpellType.BounceProjectile:
-                SpawnBounceProjectile(spell, stats, direction, isUltimate);
+                SpawnBounceProjectile(spell, stats, direction);
                 break;
         }
     }
 
-    private RuntimeSpellStats GetSpellStats(SpellData spell, bool isUltimate)
+    private RuntimeSpellStats GetSpellStats(SpellData spell, bool isUltimate, int slot)
     {
         RuntimeSpellStats stats = new RuntimeSpellStats
         {
@@ -232,7 +214,8 @@ public class SpellCaster : MonoBehaviour
             extraProjectiles = 0,
             extraBounces = 0,
             extraPulses = 0,
-            canDamageCaster = spell.canDamageCaster
+            canDamageCaster = spell.canDamageCaster,
+            sizeMultiplier = 1f
         };
 
         if (isUltimate)
@@ -242,12 +225,99 @@ public class SpellCaster : MonoBehaviour
             stats.range *= spell.ultimateRangeMultiplier;
             stats.cooldown *= spell.ultimateCooldownMultiplier;
             stats.spawnOffset *= spell.ultimateSizeMultiplier;
+            stats.sizeMultiplier *= spell.ultimateSizeMultiplier;
             stats.extraProjectiles += spell.ultimateExtraProjectiles;
             stats.extraBounces += spell.ultimateExtraBounces;
             stats.extraPulses += spell.ultimateExtraPulses;
         }
 
+        ApplyUpgrades(ref stats, slot, isUltimate);
+
+        stats.cooldown = Mathf.Max(0.05f, stats.cooldown);
+        stats.speed = Mathf.Max(0.1f, stats.speed);
+        stats.range = Mathf.Max(0.1f, stats.range);
+        stats.sizeMultiplier = Mathf.Max(0.1f, stats.sizeMultiplier);
+
         return stats;
+    }
+
+    private void ApplyUpgrades(ref RuntimeSpellStats stats, int slot, bool isUltimate)
+    {
+        if (PlayerUpgradeManager.Instance == null)
+            return;
+
+        UpgradeTarget target = GetUpgradeTargetForSlot(slot, isUltimate);
+        List<UpgradeData> upgrades = PlayerUpgradeManager.Instance.GetUpgradesForTarget(target);
+
+        foreach (UpgradeData upgrade in upgrades)
+        {
+            switch (upgrade.effectType)
+            {
+                case UpgradeEffectType.DamageMultiplier:
+                    stats.damage *= upgrade.value;
+                    break;
+
+                case UpgradeEffectType.ExtraProjectiles:
+                    stats.extraProjectiles += Mathf.RoundToInt(upgrade.value);
+                    break;
+
+                case UpgradeEffectType.CooldownReduction:
+                    stats.cooldown *= 1f - upgrade.value;
+                    break;
+
+                case UpgradeEffectType.Special:
+                    ApplySpecialUpgrade(upgrade.specialID, upgrade.value, ref stats);
+                    break;
+            }
+        }
+    }
+
+    private UpgradeTarget GetUpgradeTargetForSlot(int slot, bool isUltimate)
+    {
+        if (isUltimate || slot == 3)
+            return UpgradeTarget.Ultimate;
+
+        if (slot == 1)
+            return UpgradeTarget.SpellSlot1;
+
+        if (slot == 2)
+            return UpgradeTarget.SpellSlot2;
+
+        return UpgradeTarget.Global;
+    }
+
+    private void ApplySpecialUpgrade(string specialID, float value, ref RuntimeSpellStats stats)
+    {
+        switch (specialID)
+        {
+            case "BIG_PROJECTILES":
+                stats.sizeMultiplier += value;
+                break;
+
+            case "BOUNCE":
+                stats.extraBounces += Mathf.RoundToInt(value);
+                break;
+
+            case "NOVA_PULSE":
+                stats.extraPulses += Mathf.RoundToInt(value);
+                break;
+
+            case "LONG_RANGE":
+                stats.range *= value;
+                break;
+
+            case "FAST_PROJECTILES":
+                stats.speed *= value;
+                break;
+
+            case "ULTIMATE_DAMAGE":
+                stats.damage *= value;
+                break;
+
+            case "ULTIMATE_EXTRA_PROJECTILES":
+                stats.extraProjectiles += Mathf.RoundToInt(value);
+                break;
+        }
     }
 
     private Vector2 GetMouseDirection()
@@ -257,9 +327,9 @@ public class SpellCaster : MonoBehaviour
         return (worldMouse - (Vector2)castPoint.position).normalized;
     }
 
-    private Vector2 GetSpawnPosition(SpellData spell, Vector2 direction)
+    private Vector2 GetSpawnPosition(RuntimeSpellStats stats, Vector2 direction)
     {
-        return (Vector2)castPoint.position + direction * spell.spawnOffset;
+        return (Vector2)castPoint.position + direction * stats.spawnOffset;
     }
 
     private bool IsCasterCollider(Collider2D col)
@@ -283,7 +353,7 @@ public class SpellCaster : MonoBehaviour
         return false;
     }
 
-    private void SpawnProjectile(SpellData spell, RuntimeSpellStats stats, Vector2 direction, bool isUltimate)
+    private void SpawnProjectile(SpellData spell, RuntimeSpellStats stats, Vector2 direction)
     {
         int projectileCount = 1 + stats.extraProjectiles;
 
@@ -309,13 +379,10 @@ public class SpellCaster : MonoBehaviour
         if (spell.projectilePrefab == null)
             return;
 
-        Vector2 spawnPos = GetSpawnPosition(spell, direction);
+        Vector2 spawnPos = GetSpawnPosition(stats, direction);
 
-        GameObject proj = Instantiate(
-            spell.projectilePrefab,
-            spawnPos,
-            Quaternion.identity
-        );
+        GameObject proj = Instantiate(spell.projectilePrefab, spawnPos, Quaternion.identity);
+        proj.transform.localScale *= stats.sizeMultiplier;
 
         Projectile projectile = proj.GetComponent<Projectile>();
         if (projectile != null)
@@ -324,18 +391,15 @@ public class SpellCaster : MonoBehaviour
         }
     }
 
-    private void SpawnExplosiveProjectile(SpellData spell, RuntimeSpellStats stats, Vector2 direction, bool isUltimate)
+    private void SpawnExplosiveProjectile(SpellData spell, RuntimeSpellStats stats, Vector2 direction)
     {
         if (spell.projectilePrefab == null)
             return;
 
-        Vector2 spawnPos = GetSpawnPosition(spell, direction);
+        Vector2 spawnPos = GetSpawnPosition(stats, direction);
 
-        GameObject proj = Instantiate(
-            spell.projectilePrefab,
-            spawnPos,
-            Quaternion.identity
-        );
+        GameObject proj = Instantiate(spell.projectilePrefab, spawnPos, Quaternion.identity);
+        proj.transform.localScale *= stats.sizeMultiplier;
 
         ExplosiveProjectile explosive = proj.GetComponent<ExplosiveProjectile>();
         if (explosive != null)
@@ -344,18 +408,15 @@ public class SpellCaster : MonoBehaviour
         }
     }
 
-    private void SpawnBounceProjectile(SpellData spell, RuntimeSpellStats stats, Vector2 direction, bool isUltimate)
+    private void SpawnBounceProjectile(SpellData spell, RuntimeSpellStats stats, Vector2 direction)
     {
         if (spell.projectilePrefab == null)
             return;
 
-        Vector2 spawnPos = GetSpawnPosition(spell, direction);
+        Vector2 spawnPos = GetSpawnPosition(stats, direction);
 
-        GameObject proj = Instantiate(
-            spell.projectilePrefab,
-            spawnPos,
-            Quaternion.identity
-        );
+        GameObject proj = Instantiate(spell.projectilePrefab, spawnPos, Quaternion.identity);
+        proj.transform.localScale *= stats.sizeMultiplier;
 
         BounceProjectile bounce = proj.GetComponent<BounceProjectile>();
         if (bounce != null)
@@ -368,9 +429,7 @@ public class SpellCaster : MonoBehaviour
     private void FireLaser(SpellData spell, RuntimeSpellStats stats)
     {
         if (!laserActive)
-        {
             StartCoroutine(PlayerLaserRoutine(spell, stats));
-        }
     }
 
     private IEnumerator PlayerLaserRoutine(SpellData spell, RuntimeSpellStats stats)
@@ -380,7 +439,7 @@ public class SpellCaster : MonoBehaviour
         try
         {
             Vector2 lockedDirection = GetMouseDirection();
-            Vector2 lockedStart = GetSpawnPosition(spell, lockedDirection);
+            Vector2 lockedStart = GetSpawnPosition(stats, lockedDirection);
             Vector2 lockedEnd = lockedStart + lockedDirection * stats.range;
 
             if (spell.telegraphLaser)
@@ -396,15 +455,10 @@ public class SpellCaster : MonoBehaviour
                 while (timer < spell.telegraphTime)
                 {
                     Vector2 direction = GetMouseDirection();
-                    Vector2 startPoint = GetSpawnPosition(spell, direction);
-
-                    RaycastHit2D[] hits = Physics2D.RaycastAll(
-                        startPoint,
-                        direction,
-                        stats.range
-                    );
-
+                    Vector2 startPoint = GetSpawnPosition(stats, direction);
                     Vector2 endPoint = startPoint + direction * stats.range;
+
+                    RaycastHit2D[] hits = Physics2D.RaycastAll(startPoint, direction, stats.range);
 
                     for (int i = 0; i < hits.Length; i++)
                     {
@@ -430,16 +484,12 @@ public class SpellCaster : MonoBehaviour
             laserRenderer.enabled = true;
             laserRenderer.startColor = spell.laserColor;
             laserRenderer.endColor = spell.laserColor;
-            laserRenderer.startWidth = spell.laserWidth;
-            laserRenderer.endWidth = spell.laserWidth;
+            laserRenderer.startWidth = spell.laserWidth * stats.sizeMultiplier;
+            laserRenderer.endWidth = spell.laserWidth * stats.sizeMultiplier;
             laserRenderer.SetPosition(0, lockedStart);
             laserRenderer.SetPosition(1, lockedEnd);
 
-            RaycastHit2D[] damageHits = Physics2D.RaycastAll(
-                lockedStart,
-                lockedDirection,
-                stats.range
-            );
+            RaycastHit2D[] damageHits = Physics2D.RaycastAll(lockedStart, lockedDirection, stats.range);
 
             for (int i = 0; i < damageHits.Length; i++)
             {
@@ -447,21 +497,17 @@ public class SpellCaster : MonoBehaviour
                     continue;
 
                 IDamageable dmg = damageHits[i].collider.GetComponentInParent<IDamageable>();
+
                 if (dmg == null)
                     continue;
 
                 if (dmg is Health health)
-                {
                     health.TakeDamage(stats.damage, lockedDirection);
-                }
                 else
-                {
                     dmg.TakeDamage(stats.damage);
-                }
 
                 AddUltimateEnergy(stats.damage);
 
-                // Ultimate laser pierces all valid targets
                 if (spell != ultimateSlot)
                     break;
             }
@@ -481,21 +527,14 @@ public class SpellCaster : MonoBehaviour
     {
         if (spell.castEffect != null)
         {
-            GameObject effect = Instantiate(
-                spell.castEffect,
-                castPoint.position,
-                Quaternion.identity
-            );
-
+            GameObject effect = Instantiate(spell.castEffect, castPoint.position, Quaternion.identity);
+            effect.transform.localScale *= stats.sizeMultiplier;
             Destroy(effect, 1f);
         }
 
-        Collider2D[] hits = Physics2D.OverlapCircleAll(
-            castPoint.position,
-            stats.range
-        );
+        Collider2D[] hits = Physics2D.OverlapCircleAll(castPoint.position, stats.range);
 
-        foreach (var hit in hits)
+        foreach (Collider2D hit in hits)
         {
             if (!stats.canDamageCaster)
             {
@@ -507,22 +546,18 @@ public class SpellCaster : MonoBehaviour
             }
 
             IDamageable dmg = hit.GetComponentInParent<IDamageable>();
+
             if (dmg == null)
                 continue;
 
             Vector2 knockbackDir = ((Vector2)hit.transform.position - (Vector2)castPoint.position).normalized;
 
             if (dmg is Health health)
-            {
                 health.TakeDamage(stats.damage, knockbackDir);
-            }
             else
-            {
                 dmg.TakeDamage(stats.damage);
-            }
 
             AddUltimateEnergy(stats.damage);
-
         }
     }
 
@@ -539,13 +574,7 @@ public class SpellCaster : MonoBehaviour
 
     public float GetRemainingCooldown(int slot)
     {
-        SpellData spell = slot switch
-        {
-            1 => spellSlot1,
-            2 => spellSlot2,
-            3 => ultimateSlot,
-            _ => null
-        };
+        SpellData spell = GetSpellInSlot(slot);
 
         if (spell == null)
             return 0f;
@@ -559,7 +588,7 @@ public class SpellCaster : MonoBehaviour
         };
 
         bool isUltimate = slot == 3;
-        RuntimeSpellStats stats = GetSpellStats(spell, isUltimate);
+        RuntimeSpellStats stats = GetSpellStats(spell, isUltimate, slot);
 
         float remaining = (lastTime + stats.cooldown) - Time.time;
         return Mathf.Max(0f, remaining);
@@ -567,19 +596,14 @@ public class SpellCaster : MonoBehaviour
 
     public float GetCooldownDuration(int slot)
     {
-        SpellData spell = slot switch
-        {
-            1 => spellSlot1,
-            2 => spellSlot2,
-            3 => ultimateSlot,
-            _ => null
-        };
+        SpellData spell = GetSpellInSlot(slot);
 
         if (spell == null)
             return 1f;
 
         bool isUltimate = slot == 3;
-        RuntimeSpellStats stats = GetSpellStats(spell, isUltimate);
+        RuntimeSpellStats stats = GetSpellStats(spell, isUltimate, slot);
+
         return stats.cooldown;
     }
 
@@ -625,11 +649,7 @@ public class SpellCaster : MonoBehaviour
 
         Vector3 spawnPos = worldPosition + droppedPickupOffset;
 
-        GameObject pickupObj = Instantiate(
-            spellPickupPrefab,
-            spawnPos,
-            Quaternion.identity
-        );
+        GameObject pickupObj = Instantiate(spellPickupPrefab, spawnPos, Quaternion.identity);
 
         SpellPickup pickup = pickupObj.GetComponent<SpellPickup>();
         if (pickup != null)
@@ -639,17 +659,16 @@ public class SpellCaster : MonoBehaviour
         }
     }
 
-    private void NotifySpellsChanged()
-    {
-        OnSpellsChanged?.Invoke(spellSlot1, spellSlot2, ultimateSlot);
-    }
-
     public void SetUltimateSpell(SpellData spell)
     {
         ultimateSlot = spell;
         NotifySpellsChanged();
     }
 
+    private void NotifySpellsChanged()
+    {
+        OnSpellsChanged?.Invoke(spellSlot1, spellSlot2, ultimateSlot);
+    }
 
     private void OnTriggerEnter2D(Collider2D other)
     {

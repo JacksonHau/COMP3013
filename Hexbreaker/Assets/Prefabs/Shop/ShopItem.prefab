@@ -166,7 +166,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 5969962387781560207}
   - {fileID: 5379687178744670701}
@@ -188,6 +188,8 @@ MonoBehaviour:
   iconRenderer: {fileID: 992369622422118861}
   nameText: {fileID: 7306417537245686709}
   costText: {fileID: 3569573063266362288}
+  floatingTextPrefab: {fileID: 1011744593904058032, guid: 925fe9adf8684a745ab88af9b2897419, type: 3}
+  floatingTextOffset: {x: 0, y: 1, z: 0}
 --- !u!58 &3441318247947132981
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -251,7 +253,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.05, y: 0.05, z: 0.05}
+  m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 3479549583741595197}

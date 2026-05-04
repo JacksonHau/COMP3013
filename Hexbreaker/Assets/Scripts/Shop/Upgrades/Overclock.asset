@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f609402b81c9a04692adc6866974d48, type: 3}
+  m_Name: Overclock
+  m_EditorClassIdentifier: Assembly-CSharp::UpgradeData
+  upgradeName: Overclock
+  icon: {fileID: -8304053195962324960, guid: a4c7572c039427a4897c29d0670112e6, type: 3}
+  cost: 50
+  description: All spells cast 20% faster
+  target: 0
+  effectType: 2
+  value: 0.2
+  specialID: 

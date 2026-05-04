@@ -1,12 +1,22 @@
 using UnityEngine;
 
-public enum UpgradeType
+public enum UpgradeTarget
 {
-    MaxHealth,
-    MoveSpeed,
-    DashCooldown,
-    SpellDamage,
-    FireRate
+    Global,
+    SpellSlot1,
+    SpellSlot2,
+    SpellSlot3,
+    Dash,
+    Ultimate
+}
+
+public enum UpgradeEffectType
+{
+    DamageMultiplier,
+    ExtraProjectiles,
+    CooldownReduction,
+    OnHitEffect,
+    Special
 }
 
 [CreateAssetMenu(menuName = "Shop/Upgrade Data")]
@@ -14,7 +24,18 @@ public class UpgradeData : ScriptableObject
 {
     public string upgradeName;
     public Sprite icon;
-    public int cost = 10;
-    public UpgradeType upgradeType;
-    public float value = 1f;
+    public int cost;
+
+    [TextArea]
+    public string description;
+
+    [Header("Target")]
+    public UpgradeTarget target;
+
+    [Header("Effect")]
+    public UpgradeEffectType effectType;
+    public float value;
+
+    [Header("Special")]
+    public string specialID; 
 }

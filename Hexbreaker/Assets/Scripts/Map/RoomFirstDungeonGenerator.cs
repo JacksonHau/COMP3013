@@ -27,6 +27,14 @@ public class RoomFirstDungeonGenerator : SimpleRandomWalkDungeonGenerator
     [Header("Doors")]
     [SerializeField] private GameObject doorPrefab;
 
+    [Header("Boss Spawning")]
+    [SerializeField] private GameObject[] bossPrefabs;
+    [SerializeField] private int bossesPerBossRoom = 1;
+
+    [Header("Boss Room Random Walk")]
+    [SerializeField] private SimpleRandomWalkData bossRoomRandomWalkParameters;
+
+
     [Header("Room Spawning")]
     [SerializeField] private GameObject[] enemyPrefabs;
     [SerializeField] private GameObject[] fillerPrefabs;
@@ -83,6 +91,8 @@ public class RoomFirstDungeonGenerator : SimpleRandomWalkDungeonGenerator
 
         HashSet<Vector2Int> floor = new HashSet<Vector2Int>();
 
+        AssignRoomTypes(dungeonRooms);
+
         if (randomWalkRooms)
             floor = CreateRoomsRandomly(dungeonRooms);
         else
@@ -94,7 +104,7 @@ public class RoomFirstDungeonGenerator : SimpleRandomWalkDungeonGenerator
         tilemapVisualiser.PaintFloorTiles(floor);
         WallGenerator.CreateWalls(floor, tilemapVisualiser);
 
-        AssignRoomTypes(dungeonRooms);
+        
         SpawnRoomPrefabs(dungeonRooms);
         SpawnRoomContents(dungeonRooms, corridors);
     }
@@ -121,14 +131,29 @@ public class RoomFirstDungeonGenerator : SimpleRandomWalkDungeonGenerator
         return floor;
     }
 
+    private HashSet<Vector2Int> RunRoomRandomWalk(DungeonRoom room)
+    {
+        SimpleRandomWalkData originalParameters = randomWalkParameters;
+
+        if (room.type == RoomType.Boss && bossRoomRandomWalkParameters != null)
+        {
+            randomWalkParameters = bossRoomRandomWalkParameters;
+        }
+
+        HashSet<Vector2Int> roomFloor = RunRandomWalk(randomWalkParameters, room.center);
+
+        randomWalkParameters = originalParameters;
+
+        return roomFloor;
+    }
+
     private HashSet<Vector2Int> CreateRoomsRandomly(List<DungeonRoom> rooms)
     {
         HashSet<Vector2Int> floor = new HashSet<Vector2Int>();
 
         foreach (var room in rooms)
         {
-            var roomCenter = room.center;
-            var roomFloor = RunRandomWalk(randomWalkParameters, roomCenter);
+            var roomFloor = RunRoomRandomWalk(room);
 
             foreach (var position in roomFloor)
             {
@@ -439,14 +464,21 @@ public class RoomFirstDungeonGenerator : SimpleRandomWalkDungeonGenerator
 
             if (room.type == RoomType.Combat || room.type == RoomType.Boss)
             {
-                int enemyCount = Random.Range(minEnemiesPerRoom, maxEnemiesPerRoom + 1);
+                int enemyCount = room.type == RoomType.Boss
+                    ? bossesPerBossRoom
+                    : Random.Range(minEnemiesPerRoom, maxEnemiesPerRoom + 1);
+
+                GameObject[] prefabPool = room.type == RoomType.Boss
+                    ? bossPrefabs
+                    : enemyPrefabs;
 
                 for (int i = 0; i < enemyCount; i++)
                 {
                     Vector2Int tile = GetRandomFreeTile(tiles, usedTiles);
                     if (tile == Vector2Int.zero) break;
 
-                    GameObject enemy = SpawnObject(enemyPrefabs, tile, roomContainer.transform);
+                    GameObject enemy = SpawnObject(prefabPool, tile, roomContainer.transform);
+
                     if (enemy != null)
                     {
                         enemy.SetActive(false);
